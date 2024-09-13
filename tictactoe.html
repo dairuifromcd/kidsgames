@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Tic Tac Toe</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #game {
+            display: inline-block;
+            margin-top: 20px;
+        }
+        .cell {
+            width: 60px;
+            height: 60px;
+            border: 2px solid #000;
+            display: inline-block;
+            font-size: 48px;
+            line-height: 60px;
+            cursor: pointer;
+            vertical-align: top;
+        }
+        #message {
+            margin-top: 20px;
+            font-size: 24px;
+        }
+        #reset {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 18px;
+        }
+        #scoreboard {
+            margin-top: 20px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Tic Tac Toe</h1>
+    <div id="game"></div>
+    <div id="message"></div>
+    <button id="reset">Restart Game</button>
+    <div id="scoreboard">
+        Wins: <span id="wins">0</span> |
+        Losses: <span id="losses">0</span> |
+        Ties: <span id="ties">0</span>
+    </div>
+
+    <script>
+        const gameContainer = document.getElementById('game');
+        const message = document.getElementById('message');
+        const resetButton = document.getElementById('reset');
+        const winsDisplay = document.getElementById('wins');
+        const lossesDisplay = document.getElementById('losses');
+        const tiesDisplay = document.getElementById('ties');
+
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let isGameOver = false;
+        let wins = 0;
+        let losses = 0;
+        let ties = 0;
+
+        function createBoard() {
+            gameContainer.innerHTML = '';
+            board.forEach((cell, index) => {
+                const cellElement = document.createElement('div');
+                cellElement.classList.add('cell');
+                cellElement.dataset.index = index;
+                cellElement.innerText = cell;
+                cellElement.addEventListener('click', playerMove);
+                gameContainer.appendChild(cellElement);
+            });
+            message.innerText = "Your turn!";
+        }
+
+        function playerMove(event) {
+            const index = event.target.dataset.index;
+            if (board[index] === '' && !isGameOver) {
+                board[index] = 'X';
+                updateBoard();
+                if (checkWin('X')) {
+                    message.innerText = "You win!";
+                    wins++;
+                    winsDisplay.innerText = wins;
+                    isGameOver = true;
+                } else if (board.includes('')) {
+                    setTimeout(computerMove, 500);
+                } else {
+                    message.innerText = "It's a tie!";
+                    ties++;
+                    tiesDisplay.innerText = ties;
+                    isGameOver = true;
+                }
+            }
+        }
+
+        function computerMove() {
+            let emptyIndices = board.map((val, idx) => val === '' ? idx : null).filter(val => val !== null);
+            let randomIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+            board[randomIndex] = 'O';
+            updateBoard();
+            if (checkWin('O')) {
+                message.innerText = "Computer wins!";
+                losses++;
+                lossesDisplay.innerText = losses;
+                isGameOver = true;
+            } else if (!board.includes('')) {
+                message.innerText = "It's a tie!";
+                ties++;
+                tiesDisplay.innerText = ties;
+                isGameOver = true;
+            } else {
+                message.innerText = "Your turn!";
+            }
+        }
+
+        function updateBoard() {
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach((cell, index) => {
+                cell.innerText = board[index];
+            });
+        }
+
+        function checkWin(player) {
+            const winConditions = [
+                [0,1,2], [3,4,5], [6,7,8], // Rows
+                [0,3,6], [1,4,7], [2,5,8], // Columns
+                [0,4,8], [2,4,6]           // Diagonals
+            ];
+            return winConditions.some(condition => {
+                return condition.every(index => board[index] === player);
+            });
+        }
+
+        resetButton.addEventListener('click', () => {
+            board = ['', '', '', '', '', '', '', '', ''];
+            isGameOver = false;
+            createBoard();
+        });
+
+        createBoard();
+    </script>
+
+</body>
+</html>
