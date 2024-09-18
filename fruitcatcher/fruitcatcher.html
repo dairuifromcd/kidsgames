@@ -13,7 +13,7 @@
         #gameCanvas {
             display: block;
             margin: 0 auto;
-            background-color: #87CEEB;
+            background-color: #87ebbc;
         }
         #scoreboard {
             position: absolute;
@@ -47,17 +47,25 @@
 </head>
 <body>
 
-    <canvas id="gameCanvas" width="800" height="800"></canvas>
+    <canvas id="gameCanvas" width="800" height="900"></canvas>
     <div id="scoreboard">Score: 0 | Lives: 5</div>
     <div id="gameOverScreen">
         <div id="gameOverMessage">Game Over!</div>
         <button id="restartButton">Play Again</button>
     </div>
 
+    <!-- Add Audio Elements -->
+    <audio id="catchSound" src="catch.mp3"></audio>
+    <audio id="loseSound" src="lose.mp3"></audio>
+
     <script>
         // Get canvas and context
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+
+        // Get audio elements
+        const catchSound = document.getElementById('catchSound');
+        const loseSound = document.getElementById('loseSound');
 
         // Game variables
         let score = 0;
@@ -78,11 +86,11 @@
         // Basket object
         class Basket {
             constructor() {
-                this.width = 100;
-                this.height = 60;
+                this.width = 200;
+                this.height = 80;
                 this.x = canvas.width / 2 - this.width / 2;
                 this.y = canvas.height - this.height - 50;
-                this.speed = 9;
+                this.speed = 8;
             }
 
             draw() {
@@ -102,11 +110,11 @@
         // Fruit object
         class Fruit {
             constructor(x, y, imgSrc, isBomb = false) {
-                this.width = 50;
-                this.height = 50;
+                this.width = 80;
+                this.height = 80;
                 this.x = x;
                 this.y = y;
-                this.speed = 2 + Math.random() * 2;
+                this.speed = 3 + Math.random() * 3;
                 this.img = new Image();
                 this.img.src = imgSrc;
                 this.isBomb = isBomb;
@@ -127,10 +135,12 @@
             lives = 5;
             fruits = [];
             basket = new Basket();
-            document.getElementById('scoreboard').innerText = `Score: ${score} | Lives: ${lives}`;
+            updateScoreboard();
             document.getElementById('gameOverScreen').style.display = 'none';
             clearInterval(gameInterval);
             gameInterval = setInterval(gameLoop, 20);
+            lockInput = false;
+            keys = {};
         }
 
         // Game loop
@@ -161,19 +171,22 @@
                 if (collision(basket, fruit)) {
                     if (fruit.isBomb) {
                         lives = 0;
+                        loseSound.play(); // Play lose sound
                         endGame();
                         return;
                     } else {
+                        catchSound.play(); // Play catch sound
                         score += 10;
                         fruits.splice(i, 1);
                         i--;
-                        document.getElementById('scoreboard').innerText = `Score: ${score} | Lives: ${lives}`;
+                        updateScoreboard();
                     }
                 } else if (fruit.y > canvas.height) {
                     // Fruit missed
                     if (!fruit.isBomb) {
                         lives--;
-                        document.getElementById('scoreboard').innerText = `Score: ${score} | Lives: ${lives}`;
+                        loseSound.play(); // Play lose sound
+                        updateScoreboard();
                         if (lives <= 0) {
                             endGame();
                             return;
@@ -183,6 +196,11 @@
                     i--;
                 }
             }
+        }
+
+        // Update scoreboard
+        function updateScoreboard() {
+            document.getElementById('scoreboard').innerText = `Score: ${score} | Lives: ${lives}`;
         }
 
         // Collision detection
@@ -201,7 +219,18 @@
             document.getElementById('gameOverScreen').style.display = 'flex';
         }
 
-        // Event listeners
+        // Enable sound playback on first user interaction
+        function enableSound() {
+            catchSound.play().catch(() => {});
+            loseSound.play().catch(() => {});
+            document.removeEventListener('click', enableSound);
+            document.removeEventListener('keydown', enableSound);
+        }
+
+        document.addEventListener('click', enableSound);
+        document.addEventListener('keydown', enableSound);
+
+        // Event listeners for basket movement
         document.addEventListener('keydown', function (e) {
             keys[e.key] = true;
         });
@@ -210,11 +239,11 @@
             keys[e.key] = false;
         });
 
+        // Restart button
         document.getElementById('restartButton').addEventListener('click', init);
 
         // Start the game
         window.onload = init;
     </script>
-
 </body>
 </html>
