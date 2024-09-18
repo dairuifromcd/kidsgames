@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Fruit Catcher Game</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #87CEEB;
+            font-family: Arial, sans-serif;
+        }
+        #gameCanvas {
+            display: block;
+            margin: 0 auto;
+            background-color: #87CEEB;
+        }
+        #scoreboard {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 20px;
+            color: #fff;
+        }
+        #gameOverScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            display: none;
+        }
+        #restartButton {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <div id="scoreboard">Score: 0 | Lives: 5</div>
+    <div id="gameOverScreen">
+        <div id="gameOverMessage">Game Over!</div>
+        <button id="restartButton">Play Again</button>
+    </div>
+
+    <script>
+        // Get canvas and context
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Game variables
+        let score = 0;
+        let lives = 5;
+        let basket;
+        let fruits = [];
+        let gameInterval;
+        let keys = {};
+
+        // Load images
+        const basketImg = new Image();
+        basketImg.src = 'O6aN1p7.png';
+
+        const fruitImages = ['5b2YzKR.png', 'Uq0C4Qf.png', 'Z3x2z4E.png'];
+        const bombImg = new Image();
+        bombImg.src = 'NzxaYyc.png';
+
+        // Basket object
+        class Basket {
+            constructor() {
+                this.width = 100;
+                this.height = 60;
+                this.x = canvas.width / 2 - this.width / 2;
+                this.y = canvas.height - this.height - 10;
+                this.speed = 7;
+            }
+
+            draw() {
+                ctx.drawImage(basketImg, this.x, this.y, this.width, this.height);
+            }
+
+            move() {
+                if (keys['ArrowLeft'] && this.x > 0) {
+                    this.x -= this.speed;
+                }
+                if (keys['ArrowRight'] && this.x < canvas.width - this.width) {
+                    this.x += this.speed;
+                }
+            }
+        }
+
+        // Fruit object
+        class Fruit {
+            constructor(x, y, imgSrc, isBomb = false) {
+                this.width = 50;
+                this.height = 50;
+                this.x = x;
+                this.y = y;
+                this.speed = 3 + Math.random() * 2;
+                this.img = new Image();
+                this.img.src = imgSrc;
+                this.isBomb = isBomb;
+            }
+
+            draw() {
+                ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
+            }
+
+            update() {
+                this.y += this.speed;
+            }
+        }
+
+        // Initialize game
+        function init() {
+            score = 0;
+            lives = 5;
+            fruits = [];
+            basket = new Basket();
+            document.getElementById('scoreboard').innerText = `Score: ${score} | Lives: ${lives}`;
+            document.getElementById('gameOverScreen').style.display = 'none';
+            clearInterval(gameInterval);
+            gameInterval = setInterval(gameLoop, 20);
+        }
+
+        // Game loop
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            basket.move();
+            basket.draw();
+
+            // Create new fruits
+            if (Math.random() < 0.02) {
+                let x = Math.random() * (canvas.width - 50);
+                let imgSrc = fruitImages[Math.floor(Math.random() * fruitImages.length)];
+                let isBomb = false;
+                if (Math.random() < 0.1) {
+                    imgSrc = bombImg.src;
+                    isBomb = true;
+                }
+                fruits.push(new Fruit(x, -50, imgSrc, isBomb));
+            }
+
+            // Update and draw fruits
+            for (let i = 0; i < fruits.length; i++) {
+                let fruit = fruits[i];
+                fruit.update();
+                fruit.draw();
+
+                // Check for collision with basket
+                if (collision(basket, fruit)) {
+                    if (fruit.isBomb) {
+                        lives = 0;
+                        endGame();
+                        return;
+                    } else {
+                        score += 10;
+                        fruits.splice(i, 1);
+                        i--;
+                        document.getElementById('scoreboard').innerText = `Score: ${score} | Lives: ${lives}`;
+                    }
+                } else if (fruit.y > canvas.height) {
+                    // Fruit missed
+                    if (!fruit.isBomb) {
+                        lives--;
+                        document.getElementById('scoreboard').innerText = `Score: ${score} | Lives: ${lives}`;
+                        if (lives <= 0) {
+                            endGame();
+                            return;
+                        }
+                    }
+                    fruits.splice(i, 1);
+                    i--;
+                }
+            }
+        }
+
+        // Collision detection
+        function collision(a, b) {
+            return (
+                a.x < b.x + b.width &&
+                a.x + a.width > b.x &&
+                a.y < b.y + b.height &&
+                a.y + a.height > b.y
+            );
+        }
+
+        // End game
+        function endGame() {
+            clearInterval(gameInterval);
+            document.getElementById('gameOverScreen').style.display = 'flex';
+        }
+
+        // Event listeners
+        document.addEventListener('keydown', function (e) {
+            keys[e.key] = true;
+        });
+
+        document.addEventListener('keyup', function (e) {
+            keys[e.key] = false;
+        });
+
+        document.getElementById('restartButton').addEventListener('click', init);
+
+        // Start the game
+        window.onload = init;
+    </script>
+
+</body>
+</html>

@@ -9,14 +9,14 @@
             text-align: center;
         }
         #game-board {
-            width: 340px;
-            margin: 20px auto;
+            width: 1000px;
+            margin: 30px auto;
             display: flex;
             flex-wrap: wrap;
         }
         .card {
-            width: 80px;
-            height: 80px;
+            width: 100px;
+            height: 100px;
             margin: 5px;
             background-color: #1E90FF;
             cursor: pointer;
@@ -74,7 +74,7 @@
         const resetButton = document.getElementById('reset');
         const message = document.getElementById('message');
 
-        const symbols = ['⭐', '🍎', '🐶', '🚗', '🌈', '⚽', '🍦', '🎈'];
+        const symbols = ['⭐', '🍎', '🐶', '🚗', '🌈', '⚽', '🍦', '🎈', '🎵', '🍉', '🐱', '🚀', '🌟', '🍄', '🐸', '🎁'];
         let cardArray = [];
         let firstCard = null;
         let secondCard = null;
@@ -87,6 +87,8 @@
             gameBoard.innerHTML = '';
             matchesFound = 0;
             message.innerText = '';
+            lockBoard = false;
+            [firstCard, secondCard] = [null, null];
 
             cardArray.forEach((symbol, index) => {
                 const card = document.createElement('div');
