@@ -47,7 +47,7 @@
 </head>
 <body>
 
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <canvas id="gameCanvas" width="800" height="800"></canvas>
     <div id="scoreboard">Score: 0 | Lives: 5</div>
     <div id="gameOverScreen">
         <div id="gameOverMessage">Game Over!</div>
@@ -69,11 +69,11 @@
 
         // Load images
         const basketImg = new Image();
-        basketImg.src = 'O6aN1p7.png';
+        basketImg.src = 'basket.jpg';
 
-        const fruitImages = ['5b2YzKR.png', 'Uq0C4Qf.png', 'Z3x2z4E.png'];
+        const fruitImages = ['apple.jpg', 'orange.jpg', 'banana.jpg'];
         const bombImg = new Image();
-        bombImg.src = 'NzxaYyc.png';
+        bombImg.src = 'bomb.jpg';
 
         // Basket object
         class Basket {
@@ -81,8 +81,8 @@
                 this.width = 100;
                 this.height = 60;
                 this.x = canvas.width / 2 - this.width / 2;
-                this.y = canvas.height - this.height - 10;
-                this.speed = 7;
+                this.y = canvas.height - this.height - 50;
+                this.speed = 9;
             }
 
             draw() {
@@ -106,7 +106,7 @@
                 this.height = 50;
                 this.x = x;
                 this.y = y;
-                this.speed = 3 + Math.random() * 2;
+                this.speed = 2 + Math.random() * 2;
                 this.img = new Image();
                 this.img.src = imgSrc;
                 this.isBomb = isBomb;
